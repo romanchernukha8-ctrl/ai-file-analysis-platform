@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI PDF Analyzer</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h2>Login</h2>
+
+<input
+    type="email"
+    id="email"
+    placeholder="Email"
+>
+
+<input
+    type="password"
+    id="password"
+    placeholder="Password"
+>
+
+<button onclick="login()">
+    Login
+</button>
+
+<hr>
+
+    <h1>AI PDF Analyzer</h1>
+
+    <input type="file" id="fileInput">
+
+    <button onclick="uploadFile()">
+        Upload
+    </button>
+
+    <hr>
+
+    <h2>Files</h2>
+
+    <div id="files"></div>
+
+    <hr>
+
+    <h2>Result</h2>
+
+    <div id="result"></div>
+
+    <hr>
+
+    <h2>Document Text</h2>
+    <div id="document"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js?v=3"></script>
+
+</body>
+</html>

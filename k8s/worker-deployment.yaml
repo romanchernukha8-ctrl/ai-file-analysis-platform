@@ -1,0 +1,33 @@
+containers:
+- name: worker
+  image: ai-platform-worker:v2
+  imagePullPolicy: Never
+
+  livenessProbe:
+    exec:
+      command:
+      - pgrep
+      - python
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  readinessProbe:
+    exec:
+      command:
+      - pgrep
+      - python
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  envFrom:
+  - configMapRef:
+      name: app-config
+  - secretRef:
+      name: app-secret
+
+  volumeMounts:
+  - name: uploads
+    mountPath: /app/uploads
+
+  - name: uploads
+    mountPath: /app/generated_files

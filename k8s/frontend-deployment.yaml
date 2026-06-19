@@ -1,0 +1,21 @@
+containers:
+- name: frontend
+  image: ai-platform-frontend:v2
+  imagePullPolicy: Never
+
+  ports:
+  - containerPort: 80
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 5

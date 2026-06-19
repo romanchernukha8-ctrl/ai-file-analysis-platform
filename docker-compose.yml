@@ -1,0 +1,95 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: ai_postgres
+
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ai_platform
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ai_rabbitmq
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+
+  redis:
+    image: redis:7
+
+    container_name: ai_redis
+
+    ports:
+      - "6379:6379"
+
+  ollama:
+    image: ollama/ollama
+    container_name: ai_ollama
+
+    volumes:
+      - ollama_data:/root/.ollama
+
+  api:
+    build: ./api
+    container_name: ai_api
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./api/uploads:/app/uploads
+      - ./generated_files:/app/generated_files
+
+    depends_on:
+      - rabbitmq
+
+  auth:
+    build: ./auth
+    container_name: ai_auth
+
+    ports:
+      - "8001:8001"
+
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    container_name: ai_frontend
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - api
+
+  worker:
+    build: ./worker
+    container_name: ai_worker
+
+    volumes:
+      - ./api/uploads:/app/uploads
+      - ./generated_files:/app/generated_files
+
+    depends_on:
+      - rabbitmq
+      - postgres
+      - ollama
+
+
+volumes:
+  postgres_data:
+  ollama_data:
