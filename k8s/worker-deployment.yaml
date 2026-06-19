@@ -1,33 +1,51 @@
-containers:
-- name: worker
-  image: ai-platform-worker:v2
-  imagePullPolicy: Never
+apiVersion: apps/v1
+kind: Deployment
 
-  livenessProbe:
-    exec:
-      command:
-      - pgrep
-      - python
-    initialDelaySeconds: 15
-    periodSeconds: 20
+metadata:
+  name: worker
+  namespace: dev
 
-  readinessProbe:
-    exec:
-      command:
-      - pgrep
-      - python
-    initialDelaySeconds: 10
-    periodSeconds: 10
+spec:
+  replicas: 1
 
-  envFrom:
-  - configMapRef:
-      name: app-config
-  - secretRef:
-      name: app-secret
+  selector:
+    matchLabels:
+      app: worker
 
-  volumeMounts:
-  - name: uploads
-    mountPath: /app/uploads
+  template:
+    metadata:
+      labels:
+        app: worker
 
-  - name: uploads
-    mountPath: /app/generated_files
+    spec:
+      containers:
+      - name: worker
+        image: ai-platform-worker:v2
+        imagePullPolicy: Never
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secret
+
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+
+        - name: uploads
+          mountPath: /app/generated_files
+
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
