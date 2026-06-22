@@ -1,21 +1,41 @@
-containers:
-- name: frontend
-  image: cherroman/frontend:latest
-  imagePullPolicy: Always
+apiVersion: apps/v1
+kind: Deployment
 
-  ports:
-  - containerPort: 80
+metadata:
+  name: frontend
+  namespace: dev
 
-  livenessProbe:
-    httpGet:
-      path: /
-      port: 80
-    initialDelaySeconds: 10
-    periodSeconds: 10
+spec:
+  replicas: 1
 
-  readinessProbe:
-    httpGet:
-      path: /
-      port: 80
-    initialDelaySeconds: 5
-    periodSeconds: 5
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      containers:
+      - name: frontend
+        image: cherroman/frontend:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 80
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
