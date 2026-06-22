@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
       - name: auth
-        image: ai-platform-auth:v7
-        imagePullPolicy: Never
+        image: cherroman/auth:latest
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 8001

@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
       - name: worker
-        image: ai-platform-worker:v2
-        imagePullPolicy: Never
+        image: cherroman/worker:latest
+        imagePullPolicy: Always
 
         resources:
           requests:

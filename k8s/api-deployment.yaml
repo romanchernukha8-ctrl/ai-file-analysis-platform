@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
       - name: api
-        image: ai-platform-api:v7
-        imagePullPolicy: Never
+        image: cherroman/api:latest
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 8000

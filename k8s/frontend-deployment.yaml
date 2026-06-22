@@ -1,7 +1,7 @@
 containers:
 - name: frontend
-  image: ai-platform-frontend:v2
-  imagePullPolicy: Never
+  image: cherroman/frontend:latest
+  imagePullPolicy: Always
 
   ports:
   - containerPort: 80
