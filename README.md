@@ -2,55 +2,55 @@
 
 ## Overview
 
-AI File Analysis Platform is a microservices-based document processing system deployed on Kubernetes.
+AI File Analysis Platform is a Kubernetes-based microservices platform for asynchronous document processing and AI-powered analysis.
 
-The platform accepts PDF, Excel, and DOCX files, processes them asynchronously through a message queue, performs AI-powered analysis, stores results in PostgreSQL, and provides monitoring and logging through a complete observability stack.
+The system accepts PDF, Excel, and DOCX files, processes them through a message queue, stores metadata and results in PostgreSQL, and provides full observability through monitoring and centralized logging.
 
-The project demonstrates production-oriented DevOps practices including Kubernetes, Helm, CI/CD, monitoring, centralized logging, autoscaling, and containerized microservices.
+This project demonstrates production-oriented DevOps practices including Kubernetes orchestration, Helm packaging, CI/CD automation, monitoring, logging, autoscaling, and infrastructure management.
 
 ---
 
 ## Architecture
 
-```text
-User
-  │
-  ▼
-Frontend
-  │
-  ▼
-API Gateway
-  │
-  ▼
-RabbitMQ
-  │
-  ▼
-Worker Service
-  │
-  ├── PostgreSQL
-  ├── Redis
-  └── Ollama
+```mermaid
+graph TD
+
+U[User] --> F[Frontend]
+F --> API[API Service]
+API --> MQ[RabbitMQ]
+MQ --> W[Worker]
+
+W --> PG[(PostgreSQL)]
+W --> R[(Redis)]
+W --> O[(Ollama)]
+
+P[Prometheus] --> K8S[Kubernetes]
+G[Grafana] --> P
+G --> L[Loki]
+PR[Promtail] --> L
 ```
 
-### Services
+---
 
-| Service       | Purpose                                       |
-| ------------- | --------------------------------------------- |
-| Frontend      | Web user interface                            |
-| API           | Receives requests and coordinates processing  |
-| Auth Service  | JWT authentication and authorization          |
-| Worker        | Background document processing                |
-| PostgreSQL    | Persistent data storage                       |
-| Redis         | Cache, sessions, JWT blacklist, rate limiting |
-| RabbitMQ      | Asynchronous task queue                       |
-| Ollama        | Local AI inference                            |
-| NGINX Ingress | External traffic routing                      |
+## Services
+
+| Service        | Purpose                                       |
+| -------------- | --------------------------------------------- |
+| Frontend       | User web interface                            |
+| API Service    | Request handling and orchestration            |
+| Auth Service   | JWT authentication and authorization          |
+| Worker Service | Background document processing                |
+| PostgreSQL     | Persistent data storage                       |
+| Redis          | Cache, sessions, JWT blacklist, rate limiting |
+| RabbitMQ       | Asynchronous task queue                       |
+| Ollama         | Local AI inference                            |
+| NGINX Ingress  | External traffic routing                      |
 
 ---
 
 ## Technology Stack
 
-### Platform & Infrastructure
+### Infrastructure
 
 * Kubernetes
 * Helm
@@ -81,6 +81,21 @@ Worker Service
 
 ---
 
+## DevOps Highlights
+
+* Designed and deployed a microservices platform on Kubernetes
+* Packaged the entire application using Helm
+* Implemented GitHub Actions CI/CD pipeline
+* Configured a Self-Hosted GitHub Runner
+* Automated Kubernetes deployments with Helm
+* Implemented Horizontal Pod Autoscaling (HPA)
+* Configured centralized logging using Loki and Promtail
+* Implemented monitoring using Prometheus and Grafana
+* Managed application configuration with ConfigMaps and Secrets
+* Provisioned persistent storage using PersistentVolumeClaims (PVC)
+
+---
+
 ## Kubernetes Features
 
 ### Namespace Isolation
@@ -95,14 +110,14 @@ Separate environments:
 
 Implemented for all services with:
 
-* Rolling updates
-* Liveness probes
-* Readiness probes
-* Replica management
+* Rolling Updates
+* Replica Management
+* Liveness Probes
+* Readiness Probes
 
 ### Configuration Management
 
-Implemented using:
+Managed using:
 
 * ConfigMaps
 * Secrets
@@ -115,45 +130,45 @@ Examples:
 
 ### Persistent Storage
 
-PersistentVolumeClaims used for:
+PersistentVolumeClaims are used for:
 
 * PostgreSQL data
 * Uploaded files
 * Ollama models
 
-### Ingress
+### Ingress Controller
 
-NGINX Ingress Controller provides:
+NGINX Ingress provides:
 
 * Frontend routing
 * API routing
 * Authentication service routing
 
-### Autoscaling
+### Horizontal Pod Autoscaler
 
-Horizontal Pod Autoscaler configured for worker service.
+Worker service automatically scales based on CPU utilization.
 
 Configuration:
 
-* Min replicas: 1
-* Max replicas: 5
-* CPU target: 50%
+* Minimum Replicas: 1
+* Maximum Replicas: 5
+* Target CPU Utilization: 50%
 
 ---
 
 ## Helm Chart
 
-The entire application is packaged as a Helm Chart.
+The entire application is packaged as a reusable Helm Chart.
 
-### Features
+### Helm Features
 
-* Parameterized deployments
-* ConfigMap templating
-* Secret templating
-* Ingress templating
-* HPA templating
-* PVC provisioning
-* Environment-specific configuration
+* Parameterized Deployments
+* ConfigMap Templates
+* Secret Templates
+* Ingress Templates
+* HPA Templates
+* PVC Templates
+* Environment-Specific Configuration
 
 ### Example Deployment
 
@@ -161,7 +176,7 @@ The entire application is packaged as a Helm Chart.
 helm install ai-platform ./ai-platform -n dev
 ```
 
-Custom hosts:
+Custom ingress hosts:
 
 ```bash
 helm install ai-platform ./ai-platform \
@@ -175,18 +190,18 @@ helm install ai-platform ./ai-platform \
 
 ## Monitoring
 
-Implemented using kube-prometheus-stack.
+Monitoring stack deployed using kube-prometheus-stack.
 
-### Metrics Collected
+### Metrics
 
-* CPU usage by pod
-* Memory usage by pod
-* Pod restarts
-* Running pods
-* Failed pods
-* Pending pods
-* Worker utilization
-* Ollama resource consumption
+* CPU Usage by Pod
+* Memory Usage by Pod
+* Pod Restarts
+* Running Pods
+* Failed Pods
+* Pending Pods
+* Worker Utilization
+* Ollama Resource Usage
 
 ### Components
 
@@ -203,11 +218,11 @@ Implemented using Loki and Promtail.
 
 ### Features
 
-* Kubernetes pod log collection
-* Centralized log storage
-* Log exploration in Grafana
-* Label-based filtering
-* Multi-service log aggregation
+* Kubernetes Pod Log Collection
+* Centralized Log Storage
+* Grafana Log Exploration
+* Label-Based Filtering
+* Multi-Service Log Aggregation
 
 ### Components
 
@@ -221,27 +236,36 @@ Implemented using Loki and Promtail.
 
 GitHub Actions automatically performs:
 
-1. Source code validation
-2. Docker image build
-3. Docker image push to Docker Hub
-4. Kubernetes deployment update
-5. Deployment rollout verification
+1. Python validation
+2. Helm validation
+3. Docker image build
+4. Docker image push
+5. Helm deployment
+6. Rollout verification
 
 ### Pipeline Flow
 
 ```text
 Git Push
-    ↓
+   ↓
 GitHub Actions
-    ↓
+   ↓
+Python Validation
+   ↓
+Helm Validation
+   ↓
 Docker Build
-    ↓
+   ↓
 Docker Hub
-    ↓
+   ↓
+Helm Upgrade
+   ↓
 Kubernetes Deployment
+   ↓
+Rollout Verification
 ```
 
-### Docker Images
+### Published Images
 
 * cherroman/api
 * cherroman/auth
@@ -254,9 +278,9 @@ Kubernetes Deployment
 
 Redis is used for production-like functionality.
 
-### File Processing Status
+### File Status Cache
 
-Stores file states:
+Stores processing states:
 
 * uploaded
 * processing
@@ -264,7 +288,7 @@ Stores file states:
 
 ### JWT Blacklist
 
-Stores invalidated authentication tokens.
+Stores invalidated JWT tokens.
 
 ### Rate Limiting
 
@@ -287,25 +311,27 @@ Stores active user sessions.
 * Persistent Volumes
 * Ingress Controller
 * Horizontal Pod Autoscaler
+* Helm Packaging
 * Monitoring (Prometheus + Grafana)
 * Centralized Logging (Loki + Promtail)
-* Helm Chart
 * GitHub Actions CI/CD
+* Self-Hosted Runner
 
 ### Completion
 
-10/10 planned Kubernetes platform requirements implemented.
+**10/10 planned platform requirements implemented.**
 
 ---
 
 ## Future Improvements
 
 * Terraform Infrastructure as Code
-* Multi-node Kubernetes cluster
-* Production TLS certificates
-* Advanced Helm environments
-* ArgoCD GitOps deployment
-* Automated backup strategy
+* Multi-Node Kubernetes Cluster
+* TLS Certificates with Cert-Manager
+* ArgoCD GitOps Deployment
+* Blue/Green Deployments
+* Automated Backup Strategy
+* Cloud Deployment (AWS / Azure)
 
 ---
 
@@ -313,4 +339,4 @@ Stores active user sessions.
 
 Roman Chernukha
 
-DevOps Engineering Learning Project focused on Kubernetes, Helm, Observability, and CI/CD automation.
+Production-inspired Kubernetes platform demonstrating Helm-based deployments, CI/CD automation, observability, autoscaling, and microservices architecture.
