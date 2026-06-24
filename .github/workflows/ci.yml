@@ -31,10 +31,28 @@ jobs:
       - name: Check Worker syntax
         run: python -m py_compile worker/worker.py
 
-  docker-build:
+  helm-check:
     runs-on: ubuntu-latest
 
     needs: python-check
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm Lint
+        run: helm lint ai-platform
+
+      - name: Helm Template Validation
+        run: helm template ai-platform ./ai-platform > /dev/null
+
+  docker-build:
+    runs-on: ubuntu-latest
+
+    needs: helm-check
 
     steps:
       - name: Checkout repository
@@ -82,19 +100,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update Kubernetes Deployments
-        run: |
-          kubectl apply -f k8s/api-deployment.yaml
-          kubectl apply -f k8s/auth-deployment.yaml
-          kubectl apply -f k8s/worker-deployment.yaml
-          kubectl apply -f k8s/frontend-deployment.yaml
+      - name: Install Helm
+        uses: azure/setup-helm@v4
 
-      - name: Restart Deployments
+      - name: Deploy with Helm
         run: |
-          kubectl rollout restart deployment api -n dev
-          kubectl rollout restart deployment auth -n dev
-          kubectl rollout restart deployment worker -n dev
-          kubectl rollout restart deployment frontend -n dev
+          helm upgrade --install ai-platform ./ai-platform \
+            -n dev \
+            --create-namespace
 
       - name: Check Rollout Status
         run: |
