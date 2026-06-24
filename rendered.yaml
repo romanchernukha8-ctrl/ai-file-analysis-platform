@@ -1,0 +1,650 @@
+---
+# Source: ai-platform/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: app-secret
+  namespace: dev
+
+type: Opaque
+
+data:
+  POSTGRES_PASSWORD: Q0hBTkdFX01F
+  JWT_SECRET: Q0hBTkdFX01F
+
+---
+# Source: ai-platform/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: app-config
+  namespace: dev
+
+data:
+  POSTGRES_HOST: "postgres"
+  POSTGRES_DB: "ai_platform"
+  POSTGRES_USER: "admin"
+
+  REDIS_HOST: "redis"
+
+  RABBITMQ_HOST: "rabbitmq"
+
+  JWT_ALGORITHM: "HS256"
+
+---
+# Source: ai-platform/templates/ollama-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: ollama-pvc
+  namespace: dev
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# Source: ai-platform/templates/postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: postgres-pvc
+  namespace: dev
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# Source: ai-platform/templates/uploads-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: uploads-pvc
+  namespace: dev
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# Source: ai-platform/templates/api-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: api-service
+  namespace: dev
+
+spec:
+  selector:
+    app: api
+
+  ports:
+  - port: 8000
+    targetPort: 8000
+
+  type: NodePort
+
+---
+# Source: ai-platform/templates/auth-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: auth-service
+  namespace: dev
+
+spec:
+  selector:
+    app: auth
+
+  ports:
+  - port: 8001
+    targetPort: 8001
+
+  type: NodePort
+
+---
+# Source: ai-platform/templates/frontend-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: frontend-service
+  namespace: dev
+
+spec:
+  selector:
+    app: frontend
+
+  ports:
+  - port: 80
+    targetPort: 80
+
+  type: NodePort
+
+---
+# Source: ai-platform/templates/ollama-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: ollama
+  namespace: dev
+
+spec:
+  selector:
+    app: ollama
+
+  ports:
+  - port: 11434
+    targetPort: 11434
+
+  type: ClusterIP
+
+---
+# Source: ai-platform/templates/postgres-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: postgres
+  namespace: dev
+
+spec:
+  selector:
+    app: postgres
+
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+---
+# Source: ai-platform/templates/rabbitmq-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: rabbitmq
+  namespace: dev
+
+spec:
+  selector:
+    app: rabbitmq
+
+  ports:
+  - name: amqp
+    port: 5672
+    targetPort: 5672
+
+  - name: management
+    port: 15672
+    targetPort: 15672
+
+---
+# Source: ai-platform/templates/redis-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: redis
+  namespace: dev
+
+spec:
+  selector:
+    app: redis
+
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+---
+# Source: ai-platform/templates/api-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: api
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: api
+
+  template:
+    metadata:
+      labels:
+        app: api
+
+    spec:
+      containers:
+      - name: api
+        image: cherroman/api:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8000
+
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secret
+
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+
+        - name: uploads
+          mountPath: /app/generated_files
+
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+---
+# Source: ai-platform/templates/auth-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: auth
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: auth
+
+  template:
+    metadata:
+      labels:
+        app: auth
+
+    spec:
+      containers:
+      - name: auth
+        image: cherroman/auth:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8001
+
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8001
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secret
+---
+# Source: ai-platform/templates/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: frontend
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      containers:
+      - name: frontend
+        image: cherroman/frontend:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 80
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+# Source: ai-platform/templates/ollama-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: ollama
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: ollama
+
+  template:
+    metadata:
+      labels:
+        app: ollama
+
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama
+
+        ports:
+        - containerPort: 11434
+
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /root/.ollama
+
+      volumes:
+      - name: ollama-storage
+        persistentVolumeClaim:
+          claimName: ollama-pvc
+---
+# Source: ai-platform/templates/postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: postgres
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: postgres
+
+  template:
+    metadata:
+      labels:
+        app: postgres
+
+    spec:
+      containers:
+      - name: postgres
+
+        image: postgres:16
+
+        ports:
+        - containerPort: 5432
+
+        env:
+        - name: POSTGRES_USER
+          value: admin
+
+        - name: POSTGRES_PASSWORD
+          value: admin
+
+        - name: POSTGRES_DB
+          value: ai_platform
+
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+# Source: ai-platform/templates/rabbitmq-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: rabbitmq
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: rabbitmq
+
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+
+    spec:
+      containers:
+      - name: rabbitmq
+
+        image: rabbitmq:3-management
+
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: admin
+
+        - name: RABBITMQ_DEFAULT_PASS
+          value: admin
+
+---
+# Source: ai-platform/templates/redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: redis
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: redis
+
+  template:
+    metadata:
+      labels:
+        app: redis
+
+    spec:
+      containers:
+      - name: redis
+        image: redis:7
+
+        ports:
+        - containerPort: 6379
+
+---
+# Source: ai-platform/templates/worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: worker
+  namespace: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: worker
+
+  template:
+    metadata:
+      labels:
+        app: worker
+
+    spec:
+      containers:
+      - name: worker
+        image: cherroman/worker:latest
+        imagePullPolicy: Always
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secret
+
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+
+        - name: uploads
+          mountPath: /app/generated_files
+
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+---
+# Source: ai-platform/templates/worker-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+
+metadata:
+  name: worker-hpa
+  namespace: dev
+
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: worker
+
+  minReplicas: 1
+  maxReplicas: 5
+
+  metrics:
+  - type: Resource
+
+    resource:
+      name: cpu
+
+      target:
+        type: Utilization
+        averageUtilization: 50
+
+---
+# Source: ai-platform/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: ai-platform-ingress
+  namespace: dev
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+  - host: app.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+
+  - host: api.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 8000
+
+  - host: auth.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 8001
