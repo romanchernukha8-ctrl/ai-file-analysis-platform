@@ -73,3 +73,32 @@ jobs:
 
       - name: Push Frontend image
         run: docker push cherroman/frontend:latest
+  deploy:
+    runs-on: self-hosted
+
+    needs: docker-build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update Kubernetes Deployments
+        run: |
+          kubectl apply -f k8s/api-deployment.yaml
+          kubectl apply -f k8s/auth-deployment.yaml
+          kubectl apply -f k8s/worker-deployment.yaml
+          kubectl apply -f k8s/frontend-deployment.yaml
+
+      - name: Restart Deployments
+        run: |
+          kubectl rollout restart deployment api -n dev
+          kubectl rollout restart deployment auth -n dev
+          kubectl rollout restart deployment worker -n dev
+          kubectl rollout restart deployment frontend -n dev
+
+      - name: Check Rollout Status
+        run: |
+          kubectl rollout status deployment/api -n dev
+          kubectl rollout status deployment/auth -n dev
+          kubectl rollout status deployment/worker -n dev
+          kubectl rollout status deployment/frontend -n dev
