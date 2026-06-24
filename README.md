@@ -35,9 +35,56 @@ User → Frontend → API → Queue → Worker → Database
 
 ---
 
+## Technologies
+
+* Kubernetes
+* Docker
+* Docker Hub
+* GitHub Actions
+* Self-Hosted Runner
+* PostgreSQL
+* Redis
+* RabbitMQ
+* Ollama
+* Prometheus
+* Grafana
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions automatically performs:
+
+1. Python code validation
+2. Docker image build
+3. Docker image push to Docker Hub
+4. Kubernetes deployment update
+5. Deployment rollout verification
+
+### Workflow
+
+Git Push → GitHub Actions → Docker Build → Docker Hub → Kubernetes
+
+### Pipeline Stages
+
+* python-check
+* docker-build
+* deploy
+
+### Docker Images
+
+* cherroman/api
+* cherroman/auth
+* cherroman/worker
+* cherroman/frontend
+
+Deployment is executed through a GitHub Actions Self-Hosted Runner connected to the Kubernetes environment.
+
+---
+
 ## Redis Usage
 
-Redis is used for several production-like features:
+Redis is used for several production-like features.
 
 ### File Status Cache
 
@@ -77,8 +124,6 @@ Namespaces created:
 * staging
 * production
 
----
-
 ### 2. Deployments ✅
 
 Implemented for all services.
@@ -87,9 +132,8 @@ Features:
 
 * replicas
 * rolling updates
-* deployment management
-
----
+* liveness probes
+* readiness probes
 
 ### 3. ConfigMaps + Secrets ✅
 
@@ -99,8 +143,6 @@ Examples:
 * DB_URL
 * API_KEYS
 
----
-
 ### 4. Persistent Volumes ✅
 
 Used for:
@@ -108,16 +150,13 @@ Used for:
 * PostgreSQL
 * uploaded files
 
----
-
 ### 5. Ingress Controller ✅
 
 Domains:
 
 * api.local
+* auth.local
 * app.local
-
----
 
 ### 6. Horizontal Pod Autoscaler (HPA) ✅
 
@@ -129,18 +168,17 @@ Configuration:
 * maxReplicas: 5
 * targetCPUUtilization: 50%
 
----
+### 7. CI/CD ✅
 
-### 7. CI/CD ❌
+Implemented using GitHub Actions and a Self-Hosted Runner.
 
-Planned:
+Features:
 
-* GitHub Actions
+* Automated validation
 * Docker image build
-* Push to registry
-* Kubernetes deployment
-
----
+* Docker Hub publishing
+* Automatic Kubernetes deployment
+* Rollout verification
 
 ### 8. Monitoring (Prometheus + Grafana) ✅
 
@@ -160,16 +198,12 @@ Dashboard includes:
 * API CPU Usage
 * API Memory Usage
 
----
-
 ### 9. Logging (Loki) ❌
 
 Planned:
 
 * Centralized log collection
 * Grafana log visualization
-
----
 
 ### 10. Helm Chart ❌
 
@@ -190,6 +224,17 @@ Planned:
 | Ingress Controller                | ✅      |
 | HPA                               | ✅      |
 | Monitoring (Prometheus + Grafana) | ✅      |
-| CI/CD                             | ❌      |
+| CI/CD                             | ✅      |
 | Logging (Loki)                    | ❌      |
 | Helm Chart                        | ❌      |
+
+---
+
+## Project Status
+
+Current completion: **8/10 Kubernetes requirements implemented.**
+
+Remaining tasks:
+
+* Logging with Loki
+* Helm Chart packaging
