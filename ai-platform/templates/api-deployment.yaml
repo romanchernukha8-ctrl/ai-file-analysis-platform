@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 
 spec:
-  replicas: 1
+  replicas: {{ .Values.api.replicas }}
 
   selector:
     matchLabels:
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: cherroman/api:latest
+        image: {{ .Values.api.image }}
         imagePullPolicy: Always
 
         ports:

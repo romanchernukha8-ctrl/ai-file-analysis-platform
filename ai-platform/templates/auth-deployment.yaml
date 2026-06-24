@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 
 spec:
-  replicas: 1
+  replicas: {{ .Values.auth.replicas }}
 
   selector:
     matchLabels:
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: auth
-        image: cherroman/auth:latest
+        image: {{ .Values.auth.image }}
         imagePullPolicy: Always
 
         ports:

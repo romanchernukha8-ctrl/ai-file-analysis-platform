@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: ollama
-        image: ollama/ollama
+        image: {{ .Values.ollama.image }}
 
         ports:
         - containerPort: 11434

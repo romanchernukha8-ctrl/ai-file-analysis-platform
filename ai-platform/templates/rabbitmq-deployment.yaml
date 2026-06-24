@@ -21,7 +21,7 @@ spec:
       containers:
       - name: rabbitmq
 
-        image: rabbitmq:3-management
+        image: {{ .Values.rabbitmq.image }}
 
         ports:
         - containerPort: 5672

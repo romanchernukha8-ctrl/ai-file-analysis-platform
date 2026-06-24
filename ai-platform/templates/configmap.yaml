@@ -6,12 +6,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
 
 data:
-  POSTGRES_HOST: "postgres"
-  POSTGRES_DB: "ai_platform"
-  POSTGRES_USER: "admin"
+  POSTGRES_HOST: {{ .Values.config.postgresHost | quote }}
+  POSTGRES_DB: {{ .Values.config.postgresDb | quote }}
+  POSTGRES_USER: {{ .Values.config.postgresUser | quote }}
 
-  REDIS_HOST: "redis"
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
 
-  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_HOST: {{ .Values.config.rabbitmqHost | quote }}
 
-  JWT_ALGORITHM: "HS256"
+  JWT_ALGORITHM: {{ .Values.config.jwtAlgorithm | quote }}

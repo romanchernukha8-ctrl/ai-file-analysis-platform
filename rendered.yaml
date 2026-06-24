@@ -5,7 +5,7 @@ kind: Secret
 
 metadata:
   name: app-secret
-  namespace: dev
+  namespace: default
 
 type: Opaque
 
@@ -20,7 +20,7 @@ kind: ConfigMap
 
 metadata:
   name: app-config
-  namespace: dev
+  namespace: default
 
 data:
   POSTGRES_HOST: "postgres"
@@ -40,7 +40,7 @@ kind: PersistentVolumeClaim
 
 metadata:
   name: ollama-pvc
-  namespace: dev
+  namespace: default
 
 spec:
   accessModes:
@@ -57,7 +57,7 @@ kind: PersistentVolumeClaim
 
 metadata:
   name: postgres-pvc
-  namespace: dev
+  namespace: default
 
 spec:
   accessModes:
@@ -74,7 +74,7 @@ kind: PersistentVolumeClaim
 
 metadata:
   name: uploads-pvc
-  namespace: dev
+  namespace: default
 
 spec:
   accessModes:
@@ -91,7 +91,7 @@ kind: Service
 
 metadata:
   name: api-service
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -110,7 +110,7 @@ kind: Service
 
 metadata:
   name: auth-service
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -129,7 +129,7 @@ kind: Service
 
 metadata:
   name: frontend-service
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -148,7 +148,7 @@ kind: Service
 
 metadata:
   name: ollama
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -167,7 +167,7 @@ kind: Service
 
 metadata:
   name: postgres
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -184,7 +184,7 @@ kind: Service
 
 metadata:
   name: rabbitmq
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -206,7 +206,7 @@ kind: Service
 
 metadata:
   name: redis
-  namespace: dev
+  namespace: default
 
 spec:
   selector:
@@ -223,7 +223,7 @@ kind: Deployment
 
 metadata:
   name: api
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -284,7 +284,7 @@ kind: Deployment
 
 metadata:
   name: auth
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -333,7 +333,7 @@ kind: Deployment
 
 metadata:
   name: frontend
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -376,7 +376,7 @@ kind: Deployment
 
 metadata:
   name: ollama
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -413,7 +413,7 @@ kind: Deployment
 
 metadata:
   name: postgres
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -462,7 +462,7 @@ kind: Deployment
 
 metadata:
   name: rabbitmq
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -500,7 +500,7 @@ kind: Deployment
 
 metadata:
   name: redis
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -529,7 +529,7 @@ kind: Deployment
 
 metadata:
   name: worker
-  namespace: dev
+  namespace: default
 
 spec:
   replicas: 1
@@ -582,7 +582,7 @@ kind: HorizontalPodAutoscaler
 
 metadata:
   name: worker-hpa
-  namespace: dev
+  namespace: default
 
 spec:
   scaleTargetRef:
@@ -610,7 +610,7 @@ kind: Ingress
 
 metadata:
   name: ai-platform-ingress
-  namespace: dev
+  namespace: default
 
 spec:
   ingressClassName: nginx

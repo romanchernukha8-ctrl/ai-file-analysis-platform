@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 
 spec:
-  replicas: 1
+  replicas: {{ .Values.worker.replicas }}
 
   selector:
     matchLabels:
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: cherroman/worker:latest
+        image: {{ .Values.worker.image }}
         imagePullPolicy: Always
 
         resources:

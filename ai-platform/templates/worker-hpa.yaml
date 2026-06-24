@@ -11,8 +11,8 @@ spec:
     kind: Deployment
     name: worker
 
-  minReplicas: 1
-  maxReplicas: 5
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
 
   metrics:
   - type: Resource
@@ -22,4 +22,4 @@ spec:
 
       target:
         type: Utilization
-        averageUtilization: 50
+        averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}

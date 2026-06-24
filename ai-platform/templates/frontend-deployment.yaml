@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 
 spec:
-  replicas: 1
+  replicas: {{ .Values.frontend.replicas }}
 
   selector:
     matchLabels:
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: cherroman/frontend:latest
+        image: {{ .Values.frontend.image }}
         imagePullPolicy: Always
 
         ports:
