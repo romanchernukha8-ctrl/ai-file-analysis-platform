@@ -105,10 +105,53 @@ jobs:
 
       - name: Push Frontend image
         run: docker push cherroman/frontend:latest
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+
+    needs: docker-build
+
+    steps:
+      - name: Scan API image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: cherroman/api:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Scan Auth image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: cherroman/auth:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Scan Worker image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: cherroman/worker:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Scan Frontend image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: cherroman/frontend:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
   deploy:
     runs-on: self-hosted
 
-    needs: docker-build
+    needs: trivy-scan
 
     steps:
       - name: Checkout repository
