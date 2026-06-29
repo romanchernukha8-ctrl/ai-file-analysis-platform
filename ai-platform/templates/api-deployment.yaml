@@ -18,10 +18,22 @@ spec:
         app: api
 
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
       containers:
       - name: api
         image: {{ .Values.api.image }}
         imagePullPolicy: Always
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
 
         resources:
 {{ toYaml .Values.api.resources | indent 10 }}
