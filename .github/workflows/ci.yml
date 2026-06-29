@@ -113,7 +113,7 @@ jobs:
 
     steps:
       - name: Scan API image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cherroman/api:latest
           format: table
@@ -122,7 +122,7 @@ jobs:
           severity: HIGH,CRITICAL
 
       - name: Scan Auth image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cherroman/auth:latest
           format: table
@@ -131,7 +131,7 @@ jobs:
           severity: HIGH,CRITICAL
 
       - name: Scan Worker image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cherroman/worker:latest
           format: table
@@ -140,7 +140,7 @@ jobs:
           severity: HIGH,CRITICAL
 
       - name: Scan Frontend image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cherroman/frontend:latest
           format: table
