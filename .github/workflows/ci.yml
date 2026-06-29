@@ -33,6 +33,9 @@ jobs:
       - name: Run Black
         run: black --check .
 
+      - name: Run Pytest
+        run: pytest
+
       - name: Check API syntax
         run: python -m py_compile api/app.py
 

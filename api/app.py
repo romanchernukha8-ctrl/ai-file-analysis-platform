@@ -14,6 +14,9 @@ redis_client = redis.Redis(
 )
 
 app = FastAPI()
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 app.add_middleware(
     CORSMiddleware,

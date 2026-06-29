@@ -1,0 +1,4 @@
+-r api/requirements.txt
+-r auth/requirements.txt
+-r worker/requirements.txt
+-r requirements-dev.txt
