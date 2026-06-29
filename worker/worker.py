@@ -1,24 +1,21 @@
+import os
+import time
+from io import BytesIO
+from pathlib import Path
+
 import pika
 import psycopg2
-import requests
-import time
 import redis
-from pypdf import PdfReader
-from pypdf import PdfWriter
-from io import BytesIO
-from reportlab.pdfgen import canvas
+import requests
 from docx import Document
 from openpyxl import load_workbook
-from pathlib import Path
-import os
+from pypdf import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
 
 os.makedirs("/app/generated_files", exist_ok=True)
 
-redis_client = redis.Redis(
-    host="redis",
-    port=6379,
-    decode_responses=True
-)
+redis_client = redis.Redis(host="redis", port=6379, decode_responses=True)
+
 
 def get_db_connection():
     return psycopg2.connect(
@@ -27,6 +24,7 @@ def get_db_connection():
         user=os.getenv("POSTGRES_USER"),
         password=os.getenv("POSTGRES_PASSWORD"),
     )
+
 
 def analyze_with_ollama(text):
 
@@ -46,17 +44,13 @@ Document:
 
     response = requests.post(
         "http://ollama:11434/api/generate",
-        json={
-            "model": "qwen2.5:0.5b",
-            "prompt": prompt,
-            "stream": False
-        },
-        timeout=300
+        json={"model": "qwen2.5:0.5b", "prompt": prompt, "stream": False},
+        timeout=300,
     )
     print("OLLAMA STATUS:", response.status_code, flush=True)
     print("OLLAMA STATUS:", response.text, flush=True)
 
-    #return response.json()["response"]
+    # return response.json()["response"]
     data = response.json()
 
     if "response" not in data:
@@ -65,10 +59,7 @@ Document:
     return data["response"]
 
 
-credentials = pika.PlainCredentials(
-    "admin",
-    "admin"
-)
+credentials = pika.PlainCredentials("admin", "admin")
 
 connection = None
 
@@ -77,10 +68,7 @@ for attempt in range(10):
     try:
 
         connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host="rabbitmq",
-                credentials=credentials
-            )
+            pika.ConnectionParameters(host="rabbitmq", credentials=credentials)
         )
 
         print("Connected to RabbitMQ", flush=True)
@@ -89,10 +77,7 @@ for attempt in range(10):
 
     except Exception as e:
 
-        print(
-            f"RabbitMQ not ready ({attempt + 1}/10): {e}",
-            flush=True
-        )
+        print(f"RabbitMQ not ready ({attempt + 1}/10): {e}", flush=True)
 
         time.sleep(5)
 
@@ -102,6 +87,8 @@ if connection is None:
 channel = connection.channel()
 
 channel.queue_declare(queue="file_queue")
+
+
 def extract_text(file_path):
 
     ext = Path(file_path).suffix.lower()
@@ -129,10 +116,7 @@ def extract_text(file_path):
 
     elif ext == ".xlsx":
 
-        workbook = load_workbook(
-            file_path,
-            data_only=True
-        )
+        workbook = load_workbook(file_path, data_only=True)
 
         pages = len(workbook.sheetnames)
 
@@ -140,25 +124,18 @@ def extract_text(file_path):
 
             text += f"\n=== SHEET: {sheet.title} ===\n"
 
-            for row in sheet.iter_rows(
-                values_only=True
-            ):
+            for row in sheet.iter_rows(values_only=True):
 
-                row_text = " ".join(
-                    str(cell)
-                    for cell in row
-                    if cell is not None
-                )
+                row_text = " ".join(str(cell) for cell in row if cell is not None)
 
                 text += row_text + "\n"
 
     else:
 
-        raise Exception(
-            f"Unsupported file type: {ext}"
-        )
+        raise Exception(f"Unsupported file type: {ext}")
 
     return text, pages
+
 
 def add_watermark(input_pdf, output_pdf):
 
@@ -178,11 +155,7 @@ def add_watermark(input_pdf, output_pdf):
 
     can.rotate(45)
 
-    can.drawString(
-        0,
-        0,
-        "AI ANALYZED"
-    )
+    can.drawString(0, 0, "AI ANALYZED")
 
     can.restoreState()
 
@@ -196,23 +169,16 @@ def add_watermark(input_pdf, output_pdf):
 
     for page in reader.pages:
 
-        page.merge_page(
-            watermark_page
-        )
+        page.merge_page(watermark_page)
 
         writer.add_page(page)
 
-    os.makedirs(
-        os.path.dirname(output_pdf),
-        exist_ok=True
-    )
+    os.makedirs(os.path.dirname(output_pdf), exist_ok=True)
 
-    with open(
-        output_pdf,
-        "wb"
-    ) as f:
+    with open(output_pdf, "wb") as f:
 
         writer.write(f)
+
 
 def callback(ch, method, properties, body):
 
@@ -232,7 +198,7 @@ def callback(ch, method, properties, body):
         ORDER BY id DESC
         LIMIT 1
         """,
-        (filename,)
+        (filename,),
     )
 
     row = cur.fetchone()
@@ -240,9 +206,7 @@ def callback(ch, method, properties, body):
     if not row:
         print(f"File not found in database: {filename}", flush=True)
 
-        ch.basic_ack(
-            delivery_tag=method.delivery_tag
-        )
+        ch.basic_ack(delivery_tag=method.delivery_tag)
         cur.close()
         conn.close()
 
@@ -251,10 +215,7 @@ def callback(ch, method, properties, body):
     file_id = row[0]
     file_path = row[1]
 
-    redis_client.set(
-        f"file:{file_id}:status",
-        "processing"
-    )
+    redis_client.set(f"file:{file_id}:status", "processing")
 
     file_path = f"/app/{file_path}"
 
@@ -266,10 +227,7 @@ def callback(ch, method, properties, body):
 
     except Exception as e:
 
-        print(
-            f"Processing error: {e}",
-            flush=True
-        )
+        print(f"Processing error: {e}", flush=True)
 
         cur.execute(
             """
@@ -277,18 +235,13 @@ def callback(ch, method, properties, body):
             SET status = 'failed'
             WHERE id = %s
             """,
-            (file_id,)
+            (file_id,),
         )
-        redis_client.set(
-            f"file:{file_id}:status",
-            "failed"
-        )
+        redis_client.set(f"file:{file_id}:status", "failed")
 
         conn.commit()
 
-        ch.basic_ack(
-            delivery_tag=method.delivery_tag
-        )
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
         cur.close()
         conn.close()
@@ -301,31 +254,18 @@ def callback(ch, method, properties, body):
 
     symbols = len(text)
 
-    print(
-        f"Pages: {pages}, Words: {words}, Symbols: {symbols}",
-        flush=True
-    )
+    print(f"Pages: {pages}, Words: {words}, Symbols: {symbols}", flush=True)
     from pathlib import Path
+
     ext = Path(file_path).suffix.lower()
 
     if ext == ".pdf":
-        output_pdf = (
-            f"/app/generated_files/"
-            f"watermarked_{filename}"
-        )
+        output_pdf = f"/app/generated_files/" f"watermarked_{filename}"
 
-        add_watermark(
-            file_path,
-            output_pdf
-        )
+        add_watermark(file_path, output_pdf)
 
-        print(
-            f"Watermark created: {output_pdf}",
-            flush=True
-        )
-        watermarked_filename = (
-            f"watermarked_{filename}"
-        )
+        print(f"Watermark created: {output_pdf}", flush=True)
+        watermarked_filename = f"watermarked_{filename}"
 
         cur.execute(
             """
@@ -333,10 +273,7 @@ def callback(ch, method, properties, body):
             SET generated_file = %s
             WHERE id = %s
             """,
-            (
-                watermarked_filename,
-                file_id
-            )
+            (watermarked_filename, file_id),
         )
 
         conn.commit()
@@ -366,7 +303,7 @@ def callback(ch, method, properties, body):
         SET status = 'processing'
         WHERE filename = %s
         """,
-        (filename,)
+        (filename,),
     )
 
     conn.commit()
@@ -382,12 +319,7 @@ def callback(ch, method, properties, body):
         )
         VALUES (%s, %s, %s, %s)
         """,
-        (
-            file_id,
-            pages,
-            words,
-            symbols
-        )
+        (file_id, pages, words, symbols),
     )
 
     conn.commit()
@@ -401,10 +333,7 @@ def callback(ch, method, properties, body):
         )
         VALUES (%s, %s)
         """,
-        (
-            file_id,
-            text
-        )
+        (file_id, text),
     )
 
     conn.commit()
@@ -418,10 +347,7 @@ def callback(ch, method, properties, body):
         )
         VALUES (%s, %s)
         """,
-        (
-            file_id,
-            ai_analysis
-        )
+        (file_id, ai_analysis),
     )
 
     conn.commit()
@@ -432,27 +358,19 @@ def callback(ch, method, properties, body):
         SET status = 'completed'
         WHERE id = %s
         """,
-        (file_id,)
+        (file_id,),
     )
 
     conn.commit()
-    redis_client.set(
-        f"file:{file_id}:status",
-        "completed"
-    )
+    redis_client.set(f"file:{file_id}:status", "completed")
 
     cur.close()
     conn.close()
 
-    ch.basic_ack(
-        delivery_tag=method.delivery_tag
-    )
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
-channel.basic_consume(
-    queue="file_queue",
-    on_message_callback=callback
-)
+channel.basic_consume(queue="file_queue", on_message_callback=callback)
 
 print("Waiting for messages...", flush=True)
 

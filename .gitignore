@@ -9,3 +9,5 @@ __pycache__/
 generated_files/*
 k8s/secret-local.yaml
 api/uploads/*
+.pytest_cache/
+.ruff_cache/

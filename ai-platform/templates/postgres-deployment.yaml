@@ -31,13 +31,16 @@ spec:
 
         env:
         - name: POSTGRES_USER
-          value: admin
+          value: {{ .Values.config.postgresUser | quote }}
 
         - name: POSTGRES_PASSWORD
-          value: admin
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: POSTGRES_PASSWORD
 
         - name: POSTGRES_DB
-          value: ai_platform
+          value: {{ .Values.config.postgresDb | quote }}
 
         volumeMounts:
         - name: postgres-storage
