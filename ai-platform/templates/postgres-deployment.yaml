@@ -23,6 +23,9 @@ spec:
 
         image: {{ .Values.postgres.image }}
 
+        resources:
+{{ toYaml .Values.postgres.resources | indent 10 }}
+
         ports:
         - containerPort: 5432
 

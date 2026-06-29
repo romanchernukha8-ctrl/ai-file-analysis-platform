@@ -23,6 +23,9 @@ spec:
 
         image: {{ .Values.rabbitmq.image }}
 
+        resources:
+{{ toYaml .Values.rabbitmq.resources | indent 10 }}
+
         ports:
         - containerPort: 5672
         - containerPort: 15672

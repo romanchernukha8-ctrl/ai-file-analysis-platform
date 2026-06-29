@@ -22,6 +22,9 @@ spec:
       - name: ollama
         image: {{ .Values.ollama.image }}
 
+        resources:
+{{ toYaml .Values.ollama.resources | indent 10 }}
+
         ports:
         - containerPort: 11434
 

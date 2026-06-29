@@ -22,5 +22,8 @@ spec:
       - name: redis
         image: {{ .Values.redis.image }}
 
+        resources:
+{{ toYaml .Values.redis.resources | indent 10 }}
+
         ports:
         - containerPort: 6379

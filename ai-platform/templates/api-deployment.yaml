@@ -23,6 +23,9 @@ spec:
         image: {{ .Values.api.image }}
         imagePullPolicy: Always
 
+        resources:
+{{ toYaml .Values.api.resources | indent 10 }}
+
         ports:
         - containerPort: 8000
 

@@ -23,6 +23,9 @@ spec:
         image: {{ .Values.auth.image }}
         imagePullPolicy: Always
 
+        resources:
+{{ toYaml .Values.auth.resources | indent 10 }}
+
         ports:
         - containerPort: 8001
 
